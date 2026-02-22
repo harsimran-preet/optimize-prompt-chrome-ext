@@ -6,10 +6,10 @@ Have you ever written a prompt that felt vague, incomplete, or rambling? Instead
 
 ## 🌟 Features
 
-- **Seamless Integration**: Works natively inside the input textareas of **Claude**, **ChatGPT**, and **Google Gemini**.
-- **One-Click Optimization**: A subtle floating ✨ button sits in your text box. Click it, and watch your prompt transform.
+- **Seamless Integration**: Works on **ANY website**, natively integrating into text areas where you type your prompts.
+- **One-Click Optimization**: A subtle floating ✨ button sits in your text box on Claude, ChatGPT, and Gemini. Click it, and watch your prompt transform.
 - **Lightning Fast**: Powered by Google's latest **Gemini 2.5 Flash** model, the optimization happens almost instantly.
-- **Keyboard Shortcut**: Prefer keeping your hands on the keyboard? Just press `Ctrl+Shift+O` (`Cmd+Shift+O` on Mac).
+- **Universal Keyboard Shortcut**: Use it anywhere! Just press `Ctrl+Shift+O` (`Cmd+Shift+O` on Mac) inside any input field on any website.
 - **Interactive Review**: Review, accept, copy, or regenerate the optimized prompt in a beautiful, unobtrusive modal before it replaces your original text.
 - **Privacy-First**: Your Gemini API key is stored securely in your browser's local storage and is never sent anywhere else.
 

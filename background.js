@@ -41,7 +41,7 @@ and requests that leverage its multimodal and research strengths.`
   };
 
   const platformContext = platformInstructions[platform] || 
-    `You are optimizing a prompt that will be sent to an AI assistant.`;
+    `You are optimizing a prompt that will be sent to an AI assistant on the website ${platform}.`;
 
   const metaPrompt = `${platformContext}
 

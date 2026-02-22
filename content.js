@@ -12,7 +12,11 @@
     if (host.includes("claude.ai")) return "claude.ai";
     if (host.includes("chatgpt.com")) return "chatgpt.com";
     if (host.includes("gemini.google.com")) return "gemini.google.com";
-    return "unknown";
+    return host;
+  }
+
+  function isKnownPlatform(platform) {
+    return platform === "claude.ai" || platform === "chatgpt.com" || platform === "gemini.google.com";
   }
 
   // ─── Input Field Selectors per Platform ──────────────────────────────────
@@ -35,7 +39,7 @@
         'textarea',
       ]
     };
-    return selectors[platform] || ['div[contenteditable="true"]', 'textarea'];
+    return selectors[platform] || ['div[contenteditable="true"]', 'textarea', 'input[type="text"]'];
   }
 
   // ─── Get Text from Active Element ────────────────────────────────────────
@@ -129,10 +133,17 @@
 
     document.addEventListener("focusin", (e) => {
       const el = e.target;
-      const isInputEl = selectors.some(sel => el.matches?.(sel));
+      const isInputEl = selectors.some(sel => el.matches?.(sel)) || 
+                        el.tagName === "TEXTAREA" || 
+                        (el.tagName === "INPUT" && el.type === "text") ||
+                        el.isContentEditable;
+                        
       if (isInputEl) {
         activeTextarea = el;
-        // Only show floating button if enabled in settings
+        
+        // Only show floating button if on known AI platforms to avoid clutter on random sites
+        if (!isKnownPlatform(detectPlatform())) return;
+        
         chrome.storage.sync.get("floatingBtn").then(({ floatingBtn }) => {
           if (floatingBtn !== false) {
             createFloatingButton();
@@ -165,7 +176,11 @@
     if (isModalOpen) return;
 
     // Find active input
-    const el = activeTextarea || findActiveInput();
+    let el = findActiveInput();
+    if (!el && activeTextarea) {
+      el = activeTextarea;
+    }
+
     if (!el) {
       showModal({ error: "Could not find an active prompt field. Click inside the prompt box first." });
       return;
@@ -178,7 +193,7 @@
     }
 
     // Get settings
-    const { geminiApiKey, outputMode, floatingBtn } = await chrome.storage.sync.get(["geminiApiKey", "outputMode", "floatingBtn"]);
+    const { geminiApiKey, outputMode } = await chrome.storage.sync.get(["geminiApiKey", "outputMode"]);
     if (!geminiApiKey) {
       showModal({ error: "No API key found. Click the ✨ extension icon in your toolbar to add your Gemini API key." });
       return;
@@ -197,6 +212,15 @@
   }
 
   function findActiveInput() {
+    let active = document.activeElement;
+    while (active && active.shadowRoot && active.shadowRoot.activeElement) {
+      active = active.shadowRoot.activeElement;
+    }
+
+    if (active && (active.tagName === "TEXTAREA" || (active.tagName === "INPUT" && active.type === "text") || active.isContentEditable)) {
+      return active;
+    }
+
     const selectors = getInputSelectors();
     for (const sel of selectors) {
       const el = document.querySelector(sel);
