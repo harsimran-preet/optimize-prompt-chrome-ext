@@ -7,10 +7,12 @@ Have you ever written a prompt that felt vague, incomplete, or rambling? Instead
 ## 🌟 Features
 
 - **Seamless Integration**: Works on **ANY website**, natively integrating into text areas where you type your prompts.
-- **One-Click Optimization**: A subtle floating ✨ button sits in your text box on Claude, ChatGPT, and Gemini. Click it, and watch your prompt transform.
+- **One-Click Optimization**: A subtle floating ✨ button sits in your text box on Claude, ChatGPT, and Gemini (or everywhere, if enabled in settings). Click it, and watch your prompt transform.
+- **Message Formalization**: Need to send a professional email or message? Use the new Formalize feature to instantly rewrite your text to be clear, polite, and professional.
 - **Lightning Fast**: Powered by Google's latest **Gemini 2.5 Flash** model, the optimization happens almost instantly.
-- **Universal Keyboard Shortcut**: Use it anywhere! Just press `Ctrl+Shift+O` (`Cmd+Shift+O` on Mac) inside any input field on any website.
-- **Interactive Review**: Review, accept, copy, or regenerate the optimized prompt in a beautiful, unobtrusive modal before it replaces your original text.
+- **Universal Keyboard Shortcuts**: Use it anywhere! Press `Ctrl+Shift+O` (`Cmd+Shift+O` on Mac) to optimize a prompt, or `Ctrl+Shift+F` (`Cmd+Shift+F` on Mac) to formalize a message.
+- **Interactive Review**: Review, edit, or apply the optimized text in a beautiful, unobtrusive modal before it replaces your original text.
+- **Platform Controls**: Easily toggle which websites the extension is active on via the settings page.
 - **Privacy-First**: Your Gemini API key is stored securely in your browser's local storage and is never sent anywhere else.
 
 ---
@@ -54,12 +56,12 @@ You're all set!
 
 ## 💡 Usage
 
-1. Go to [ChatGPT](https://chatgpt.com), [Claude](https://claude.ai), or [Gemini](https://gemini.google.com).
-2. Start typing a prompt in the chat box (e.g., *"write me an email to my boss asking for a raise but make it sound nice"*).
-3. Click the floating **✨ button** inside the text box, or press `Cmd+Shift+O` (Mac) / `Ctrl+Shift+O` (Windows/Linux).
-4. A beautiful modal will pop up with an optimized, structured, and highly detailed version of your prompt.
-5. Review the result, and click **Accept** to replace your original text. (You can also hit **Regenerate** if you want a different variation, or simply **Copy**).
-6. Send your newly optimized prompt and enjoy the vastly improved AI response!
+1. Go to [ChatGPT](https://chatgpt.com), [Claude](https://claude.ai), or [Gemini](https://gemini.google.com) (or any text box online).
+2. Start typing your text (e.g., *"write me an email to my boss asking for a raise but make it sound nice"*, or a rough message draft).
+3. Click the floating **✨ button** inside the text box, or press `Cmd+Shift+O` (Mac) / `Ctrl+Shift+O` (Windows/Linux) to optimize as an AI prompt.
+4. To formalize a message for humans instead, press `Cmd+Shift+F` (Mac) / `Ctrl+Shift+F` (Windows/Linux).
+5. A modal will pop up with an optimized, structured, or formalized version of your text.
+6. Review the result, and click **Use This** to replace your original text.
 
 ---
 

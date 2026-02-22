@@ -105,20 +105,32 @@
       <!-- Keyboard Shortcut -->
       <section id="shortcut" class="settings-section">
         <div class="section-header">
-          <h2>Keyboard Shortcut</h2>
-          <p>Trigger the optimizer without touching your mouse.</p>
+          <h2>Keyboard Shortcuts</h2>
+          <p>Trigger actions without touching your mouse.</p>
         </div>
         <div class="card">
           <div class="field">
-            <label>Current Shortcut</label>
+            <label>Optimize Prompt Shortcut</label>
             <div class="shortcut-display">
               <div class="keys" id="shortcut-keys">
                 <kbd>Ctrl</kbd><span class="key-sep">+</span><kbd>Shift</kbd><span class="key-sep">+</span><kbd>O</kbd>
               </div>
               <span class="shortcut-mac">Mac: <kbd>⌘</kbd><span class="key-sep">+</span><kbd>Shift</kbd><span class="key-sep">+</span><kbd>O</kbd></span>
             </div>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="field">
+            <label>Formalize Message Shortcut</label>
+            <div class="shortcut-display">
+              <div class="keys" id="formalize-shortcut-keys">
+                <kbd>Ctrl</kbd><span class="key-sep">+</span><kbd>Shift</kbd><span class="key-sep">+</span><kbd>F</kbd>
+              </div>
+              <span class="shortcut-mac">Mac: <kbd>⌘</kbd><span class="key-sep">+</span><kbd>Shift</kbd><span class="key-sep">+</span><kbd>F</kbd></span>
+            </div>
             <span class="field-hint">
-              To change this shortcut, visit
+              To change these shortcuts, visit
               <button class="link-btn" id="open-shortcuts">chrome://extensions/shortcuts</button>
               — find "Optimize Prompt" and click the pencil icon.
             </span>
@@ -129,10 +141,10 @@
           <div class="field">
             <label>How to use it</label>
             <ol class="steps">
-              <li>Click into any prompt field on ANY website (Claude, ChatGPT, Gemini, or even custom web apps)</li>
+              <li>Click into any prompt/text field on ANY website</li>
               <li>Type your rough idea or question</li>
-              <li>Press <kbd>Ctrl+Shift+O</kbd></li>
-              <li>Review the optimized prompt in the popup, edit if needed</li>
+              <li>Press <kbd>Ctrl+Shift+O</kbd> to optimize for AI prompts, or <kbd>Ctrl+Shift+F</kbd> to formalize a message</li>
+              <li>Review the result in the popup, edit if needed</li>
               <li>Click <strong>Use This</strong> to apply it</li>
             </ol>
           </div>
@@ -153,7 +165,12 @@
                 <div class="platform-name">Any Website</div>
                 <div class="platform-url">&lt;all_urls&gt;</div>
               </div>
-              <div class="platform-status active">Active</div>
+              <div class="platform-action">
+                <label class="toggle-switch">
+                  <input type="checkbox" id="plat-any-toggle" />
+                  <span class="toggle-track"><span class="toggle-thumb"></span></span>
+                </label>
+              </div>
             </div>
             <div class="platform-item">
               <div class="platform-icon claude-icon">C</div>
@@ -161,7 +178,12 @@
                 <div class="platform-name">Claude</div>
                 <div class="platform-url">claude.ai</div>
               </div>
-              <div class="platform-status active">Tailored</div>
+              <div class="platform-action">
+                <label class="toggle-switch">
+                  <input type="checkbox" id="plat-claude-toggle" checked />
+                  <span class="toggle-track"><span class="toggle-thumb"></span></span>
+                </label>
+              </div>
             </div>
             <div class="platform-item">
               <div class="platform-icon chatgpt-icon">G</div>
@@ -169,7 +191,12 @@
                 <div class="platform-name">ChatGPT</div>
                 <div class="platform-url">chatgpt.com</div>
               </div>
-              <div class="platform-status active">Tailored</div>
+              <div class="platform-action">
+                <label class="toggle-switch">
+                  <input type="checkbox" id="plat-chatgpt-toggle" checked />
+                  <span class="toggle-track"><span class="toggle-thumb"></span></span>
+                </label>
+              </div>
             </div>
             <div class="platform-item">
               <div class="platform-icon gemini-icon">G</div>
@@ -177,11 +204,16 @@
                 <div class="platform-name">Gemini</div>
                 <div class="platform-url">gemini.google.com</div>
               </div>
-              <div class="platform-status active">Tailored</div>
+              <div class="platform-action">
+                <label class="toggle-switch">
+                  <input type="checkbox" id="plat-gemini-toggle" checked />
+                  <span class="toggle-track"><span class="toggle-thumb"></span></span>
+                </label>
+              </div>
             </div>
           </div>
           <div class="platform-note">
-            💡 The major platforms get tailored meta-prompts, but you can use the shortcut on any website! The floating ✨ button is kept disabled on unknown sites to avoid UI clutter.
+            💡 Toggle which platforms you want the extension to be active on. "Any Website" applies to all sites not explicitly listed above.
           </div>
         </div>
       </section>

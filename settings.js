@@ -4,6 +4,10 @@ const DEFAULTS = {
   geminiApiKey: "",
   outputMode: "popup",       // "popup" | "replace"
   floatingBtn: true,
+  platAny: false,
+  platClaude: true,
+  platChatgpt: true,
+  platGemini: true
 };
 
 // ── Load settings ──────────────────────────────────────────────────────────
@@ -22,6 +26,12 @@ async function loadSettings() {
   // Floating button
   const floatOn = settings.floatingBtn !== undefined ? settings.floatingBtn : DEFAULTS.floatingBtn;
   document.getElementById("floating-btn-toggle").checked = floatOn;
+
+  // Platforms
+  document.getElementById("plat-any-toggle").checked = settings.platAny !== undefined ? settings.platAny : DEFAULTS.platAny;
+  document.getElementById("plat-claude-toggle").checked = settings.platClaude !== undefined ? settings.platClaude : DEFAULTS.platClaude;
+  document.getElementById("plat-chatgpt-toggle").checked = settings.platChatgpt !== undefined ? settings.platChatgpt : DEFAULTS.platChatgpt;
+  document.getElementById("plat-gemini-toggle").checked = settings.platGemini !== undefined ? settings.platGemini : DEFAULTS.platGemini;
 }
 
 // ── Save settings ──────────────────────────────────────────────────────────
@@ -30,6 +40,10 @@ async function saveSettings() {
   const apiKey = document.getElementById("api-key").value.trim();
   const outputMode = document.querySelector('input[name="output-mode"]:checked')?.value || "popup";
   const floatingBtn = document.getElementById("floating-btn-toggle").checked;
+  const platAny = document.getElementById("plat-any-toggle").checked;
+  const platClaude = document.getElementById("plat-claude-toggle").checked;
+  const platChatgpt = document.getElementById("plat-chatgpt-toggle").checked;
+  const platGemini = document.getElementById("plat-gemini-toggle").checked;
 
   // Validate API key if provided
   if (apiKey && !apiKey.startsWith("AIza")) {
@@ -37,7 +51,12 @@ async function saveSettings() {
     return;
   }
 
-  await chrome.storage.sync.set({ geminiApiKey: apiKey, outputMode, floatingBtn });
+  await chrome.storage.sync.set({ 
+    geminiApiKey: apiKey, 
+    outputMode, 
+    floatingBtn,
+    platAny, platClaude, platChatgpt, platGemini
+  });
   showStatus("✓ Settings saved");
 }
 

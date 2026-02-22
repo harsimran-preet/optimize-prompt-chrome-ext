@@ -40,6 +40,13 @@
         "mac": "Command+Shift+O"
       },
       "description": "Optimize the current prompt"
+    },
+    "formalize-message": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+F",
+        "mac": "Command+Shift+F"
+      },
+      "description": "Formalize the current message"
     }
   },
   "icons": {

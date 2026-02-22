@@ -12,6 +12,11 @@ chrome.commands.onCommand.addListener(async (command) => {
     if (tab) {
       chrome.tabs.sendMessage(tab.id, { action: "triggerOptimize" });
     }
+  } else if (command === "formalize-message") {
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    if (tab) {
+      chrome.tabs.sendMessage(tab.id, { action: "triggerFormalize" });
+    }
   }
 });
 
@@ -25,25 +30,46 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
 });
 
-async function handleGeminiCall({ apiKey, prompt, platform }) {
-  const platformInstructions = {
-    "claude.ai": `You are optimizing a prompt that will be sent to Claude (Anthropic's AI). 
+async function handleGeminiCall({ apiKey, prompt, platform, actionType = "optimize" }) {
+  let metaPrompt = "";
+
+  if (actionType === "formalize") {
+    metaPrompt = `You are an expert copywriter. Your job is to take the user's rough message and rewrite it to be formal, professional, clear, and polite.
+
+Apply these improvements:
+1. Fix any grammar or spelling mistakes.
+2. Ensure the tone is professional, respectful, and appropriate for business communication.
+3. Keep the original intent and core message intact.
+4. Improve clarity and readability.
+
+Rules:
+- Preserve the user's original intent completely
+- Return ONLY the formalized text, nothing else
+- No explanations, no preamble, no "Here is your formalized message:" — just the message itself
+
+User's original message:
+"""
+${prompt}
+"""`;
+  } else {
+    const platformInstructions = {
+      "claude.ai": `You are optimizing a prompt that will be sent to Claude (Anthropic's AI). 
 Claude responds well to: clear role definitions, explicit task descriptions, structured formatting requests, 
 step-by-step reasoning instructions, and specific output format guidance.`,
-    
-    "chatgpt.com": `You are optimizing a prompt that will be sent to ChatGPT (OpenAI's AI). 
+      
+      "chatgpt.com": `You are optimizing a prompt that will be sent to ChatGPT (OpenAI's AI). 
 ChatGPT responds well to: persona/role assignment, clear objectives, context setting, 
 output format specifications, and explicit constraints.`,
-    
-    "gemini.google.com": `You are optimizing a prompt that will be sent to Gemini (Google's AI). 
+      
+      "gemini.google.com": `You are optimizing a prompt that will be sent to Gemini (Google's AI). 
 Gemini responds well to: clear task framing, factual grounding requests, multi-part structured questions, 
 and requests that leverage its multimodal and research strengths.`
-  };
+    };
 
-  const platformContext = platformInstructions[platform] || 
-    `You are optimizing a prompt that will be sent to an AI assistant on the website ${platform}.`;
+    const platformContext = platformInstructions[platform] || 
+      `You are optimizing a prompt that will be sent to an AI assistant on the website ${platform}.`;
 
-  const metaPrompt = `${platformContext}
+    metaPrompt = `${platformContext}
 
 Your job is to take the user's rough, vague, or incomplete prompt and transform it into a highly effective, 
 well-structured prompt that will get the best possible response from the AI.
@@ -66,6 +92,7 @@ User's original prompt:
 """
 ${prompt}
 """`;
+  }
 
   const response = await fetch(
     `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,

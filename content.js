@@ -141,11 +141,23 @@
       if (isInputEl) {
         activeTextarea = el;
         
-        // Only show floating button if on known AI platforms to avoid clutter on random sites
-        if (!isKnownPlatform(detectPlatform())) return;
-        
-        chrome.storage.sync.get("floatingBtn").then(({ floatingBtn }) => {
-          if (floatingBtn !== false) {
+        chrome.storage.sync.get({
+          floatingBtn: true,
+          platAny: false,
+          platClaude: true,
+          platChatgpt: true,
+          platGemini: true
+        }).then((settings) => {
+          const platform = detectPlatform();
+          let isEnabled = false;
+          if (platform === "claude.ai") isEnabled = settings.platClaude;
+          else if (platform === "chatgpt.com") isEnabled = settings.platChatgpt;
+          else if (platform === "gemini.google.com") isEnabled = settings.platGemini;
+          else isEnabled = settings.platAny;
+
+          if (!isEnabled) return;
+          
+          if (settings.floatingBtn !== false) {
             createFloatingButton();
             positionFloatingButton(el);
           }
@@ -170,10 +182,36 @@
     }, { passive: true });
   }
 
-  // ─── Main Optimize Flow ───────────────────────────────────────────────────
+  // ─── Main Flow ────────────────────────────────────────────────────────────
 
   async function triggerOptimize() {
+    return triggerAction('optimize');
+  }
+
+  async function triggerFormalize() {
+    return triggerAction('formalize');
+  }
+
+  async function triggerAction(actionType = 'optimize') {
     if (isModalOpen) return;
+
+    const platform = detectPlatform();
+    const settings = await chrome.storage.sync.get({
+      geminiApiKey: "",
+      outputMode: "popup",
+      platAny: false,
+      platClaude: true,
+      platChatgpt: true,
+      platGemini: true
+    });
+
+    let isEnabled = false;
+    if (platform === "claude.ai") isEnabled = settings.platClaude;
+    else if (platform === "chatgpt.com") isEnabled = settings.platChatgpt;
+    else if (platform === "gemini.google.com") isEnabled = settings.platGemini;
+    else isEnabled = settings.platAny;
+
+    if (!isEnabled) return; // Do nothing if disabled on this platform
 
     // Find active input
     let el = findActiveInput();
@@ -182,32 +220,29 @@
     }
 
     if (!el) {
-      showModal({ error: "Could not find an active prompt field. Click inside the prompt box first." });
+      showModal({ error: "Could not find an active text field. Click inside the text box first." });
       return;
     }
 
     const originalText = getTextFromElement(el);
     if (!originalText) {
-      showModal({ error: "Your prompt is empty. Type something first, then optimize." });
+      showModal({ error: "Your text is empty. Type something first." });
       return;
     }
 
-    // Get settings
-    const { geminiApiKey, outputMode } = await chrome.storage.sync.get(["geminiApiKey", "outputMode"]);
-    if (!geminiApiKey) {
+    if (!settings.geminiApiKey) {
       showModal({ error: "No API key found. Click the ✨ extension icon in your toolbar to add your Gemini API key." });
       return;
     }
 
-    const platform = detectPlatform();
-    const mode = outputMode || "popup";
+    const mode = settings.outputMode;
 
     if (mode === "replace") {
       // Direct replace — call API and swap immediately, show error modal only on failure
-      showModal({ loading: true, original: originalText, element: el, platform, directReplace: true });
+      showModal({ loading: true, original: originalText, element: el, platform, directReplace: true, actionType });
     } else {
       // Show loading modal with review popup
-      showModal({ loading: true, original: originalText, element: el, platform });
+      showModal({ loading: true, original: originalText, element: el, platform, actionType });
     }
   }
 
@@ -231,7 +266,7 @@
 
   // ─── Modal ────────────────────────────────────────────────────────────────
 
-  function showModal({ loading = false, original = "", error = null, element = null, platform = "", directReplace = false }) {
+  function showModal({ loading = false, original = "", error = null, element = null, platform = "", directReplace = false, actionType = "optimize" }) {
     isModalOpen = true;
     hideFloatingButton();
     removeModal();
@@ -243,12 +278,20 @@
     modal.id = "op-modal";
     modal.setAttribute("role", "dialog");
     modal.setAttribute("aria-modal", "true");
-    modal.setAttribute("aria-label", "Optimize Prompt");
+    
+    const isFormalize = actionType === "formalize";
+    const titleText = isFormalize ? "✨ Formalize Message" : "✨ Optimize Prompt";
+    const originalLabel = isFormalize ? "Original Message" : "Original Prompt";
+    const newLabel = isFormalize ? "Formalized Message" : "Optimized Prompt";
+    const loadingText = isFormalize ? "Formalizing with Gemini 2.5 Flash…" : "Optimizing with Gemini 2.5 Flash…";
+    const placeholderText = isFormalize ? "Formalized message will appear here…" : "Optimized prompt will appear here…";
+
+    modal.setAttribute("aria-label", titleText);
 
     if (error) {
       modal.innerHTML = `
         <div class="op-modal-header">
-          <span class="op-logo">✨ Optimize Prompt</span>
+          <span class="op-logo">${titleText}</span>
           <button class="op-close-btn" aria-label="Close">✕</button>
         </div>
         <div class="op-error-box">
@@ -262,21 +305,21 @@
     } else if (loading) {
       modal.innerHTML = `
         <div class="op-modal-header">
-          <span class="op-logo">✨ Optimize Prompt</span>
+          <span class="op-logo">${titleText}</span>
           <button class="op-close-btn" aria-label="Close">✕</button>
         </div>
         <div class="op-sections">
           <div class="op-section">
-            <label class="op-label">Original Prompt</label>
+            <label class="op-label">${originalLabel}</label>
             <div class="op-original-text">${escapeHtml(original)}</div>
           </div>
           <div class="op-section">
-            <label class="op-label">Optimized Prompt</label>
+            <label class="op-label">${newLabel}</label>
             <div class="op-loading">
               <div class="op-spinner"></div>
-              <span>Optimizing with Gemini 2.5 Flash…</span>
+              <span>${loadingText}</span>
             </div>
-            <textarea class="op-optimized-textarea" placeholder="Optimized prompt will appear here…" style="display:none"></textarea>
+            <textarea class="op-optimized-textarea" placeholder="${placeholderText}" style="display:none"></textarea>
           </div>
         </div>
         <div class="op-error-box" style="display:none"></div>
@@ -305,7 +348,7 @@
       const { geminiApiKey } = {};
       chrome.storage.sync.get("geminiApiKey").then(({ geminiApiKey }) => {
         chrome.runtime.sendMessage(
-          { action: "callGeminiAPI", payload: { apiKey: geminiApiKey, prompt: original, platform } },
+          { action: "callGeminiAPI", payload: { apiKey: geminiApiKey, prompt: original, platform, actionType } },
           (response) => {
             const currentModal = document.getElementById("op-modal");
             if (!currentModal) return; // Modal was closed
@@ -383,6 +426,8 @@
   chrome.runtime.onMessage.addListener((message) => {
     if (message.action === "triggerOptimize") {
       triggerOptimize();
+    } else if (message.action === "triggerFormalize") {
+      triggerFormalize();
     }
   });
 
