@@ -56,17 +56,17 @@ ${prompt}
       "claude.ai": `You are optimizing a prompt that will be sent to Claude (Anthropic's AI). 
 Claude responds well to: clear role definitions, explicit task descriptions, structured formatting requests, 
 step-by-step reasoning instructions, and specific output format guidance.`,
-      
+
       "chatgpt.com": `You are optimizing a prompt that will be sent to ChatGPT (OpenAI's AI). 
 ChatGPT responds well to: persona/role assignment, clear objectives, context setting, 
 output format specifications, and explicit constraints.`,
-      
+
       "gemini.google.com": `You are optimizing a prompt that will be sent to Gemini (Google's AI). 
 Gemini responds well to: clear task framing, factual grounding requests, multi-part structured questions, 
 and requests that leverage its multimodal and research strengths.`
     };
 
-    const platformContext = platformInstructions[platform] || 
+    const platformContext = platformInstructions[platform] ||
       `You are optimizing a prompt that will be sent to an AI assistant on the website ${platform}.`;
 
     metaPrompt = `${platformContext}
@@ -103,7 +103,7 @@ ${prompt}
         contents: [{ parts: [{ text: metaPrompt }] }],
         generationConfig: {
           temperature: 0.7,
-          maxOutputTokens: 2048
+          maxOutputTokens: 8000
         }
       })
     }
