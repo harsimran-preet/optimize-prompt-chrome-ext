@@ -1,0 +1,53 @@
+{
+  "manifest_version": 3,
+  "name": "Optimize Prompt",
+  "version": "1.0.0",
+  "description": "Instantly optimize your prompts on Claude, ChatGPT, and Gemini using Gemini 2.5 Flash.",
+  "permissions": [
+    "storage",
+    "activeTab",
+    "scripting"
+  ],
+  "host_permissions": [
+    "https://claude.ai/*",
+    "https://chatgpt.com/*",
+    "https://gemini.google.com/*",
+    "https://generativelanguage.googleapis.com/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://claude.ai/*",
+        "https://chatgpt.com/*",
+        "https://gemini.google.com/*"
+      ],
+      "js": ["content.js"],
+      "css": ["modal.css"],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_title": "Optimize Prompt — Open Settings"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["settings.html", "settings.css", "settings.js"],
+      "matches": ["<all_urls>"]
+    }
+  ],
+  "commands": {
+    "optimize-prompt": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+O",
+        "mac": "Command+Shift+O"
+      },
+      "description": "Optimize the current prompt"
+    }
+  },
+  "icons": {
+    "128": "icons/icon128.png"
+  }
+}

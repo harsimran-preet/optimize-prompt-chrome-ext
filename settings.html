@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Optimize Prompt — Settings</title>
+  <link rel="stylesheet" href="settings.css" />
+</head>
+<body>
+  <div class="page">
+
+    <!-- Sidebar -->
+    <nav class="sidebar">
+      <div class="sidebar-logo">
+        <span class="logo-icon">✨</span>
+        <div>
+          <div class="logo-name">Optimize Prompt</div>
+          <div class="logo-version">v1.1.0</div>
+        </div>
+      </div>
+      <ul class="nav-links">
+        <li><a href="#api" class="nav-link active" data-section="api">🔑 API Key</a></li>
+        <li><a href="#behavior" class="nav-link" data-section="behavior">⚙️ Behavior</a></li>
+        <li><a href="#shortcut" class="nav-link" data-section="shortcut">⌨️ Keyboard Shortcut</a></li>
+        <li><a href="#platforms" class="nav-link" data-section="platforms">🌐 Platforms</a></li>
+        <li><a href="#about" class="nav-link" data-section="about">ℹ️ About</a></li>
+      </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main">
+
+      <!-- API Key -->
+      <section id="api" class="settings-section">
+        <div class="section-header">
+          <h2>API Key</h2>
+          <p>Your Gemini API key is stored locally in Chrome and never shared.</p>
+        </div>
+        <div class="card">
+          <div class="field">
+            <label for="api-key">Gemini API Key</label>
+            <div class="input-row">
+              <input type="password" id="api-key" placeholder="AIza..." autocomplete="off" spellcheck="false" />
+              <button id="toggle-visibility" class="icon-btn" title="Show/hide">👁</button>
+            </div>
+            <span class="field-hint">
+              Get a free key at <a href="https://aistudio.google.com/app/apikey" target="_blank">Google AI Studio →</a>
+            </span>
+          </div>
+          <div class="field">
+            <label>Model</label>
+            <div class="model-badge">gemini-2.5-flash</div>
+            <span class="field-hint">Fast, capable, and free-tier friendly.</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Behavior -->
+      <section id="behavior" class="settings-section">
+        <div class="section-header">
+          <h2>Behavior</h2>
+          <p>Control how the extension responds when you trigger an optimization.</p>
+        </div>
+        <div class="card">
+          <div class="field">
+            <label>Output Mode</label>
+            <div class="radio-group">
+              <label class="radio-option">
+                <input type="radio" name="output-mode" value="popup" checked />
+                <div class="radio-content">
+                  <span class="radio-title">Show popup to review first</span>
+                  <span class="radio-desc">See the optimized prompt side-by-side, edit if needed, then apply.</span>
+                </div>
+              </label>
+              <label class="radio-option">
+                <input type="radio" name="output-mode" value="replace" />
+                <div class="radio-content">
+                  <span class="radio-title">Replace directly</span>
+                  <span class="radio-desc">Instantly swap your input with the optimized version. Fastest flow.</span>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="field">
+            <label>Floating Button</label>
+            <div class="toggle-row">
+              <div>
+                <div class="toggle-title">Show ✨ button near input fields</div>
+                <div class="toggle-desc">A floating button appears next to the prompt box on supported sites.</div>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" id="floating-btn-toggle" checked />
+                <span class="toggle-track">
+                  <span class="toggle-thumb"></span>
+                </span>
+              </label>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Keyboard Shortcut -->
+      <section id="shortcut" class="settings-section">
+        <div class="section-header">
+          <h2>Keyboard Shortcut</h2>
+          <p>Trigger the optimizer without touching your mouse.</p>
+        </div>
+        <div class="card">
+          <div class="field">
+            <label>Current Shortcut</label>
+            <div class="shortcut-display">
+              <div class="keys" id="shortcut-keys">
+                <kbd>Ctrl</kbd><span class="key-sep">+</span><kbd>Shift</kbd><span class="key-sep">+</span><kbd>O</kbd>
+              </div>
+              <span class="shortcut-mac">Mac: <kbd>⌘</kbd><span class="key-sep">+</span><kbd>Shift</kbd><span class="key-sep">+</span><kbd>O</kbd></span>
+            </div>
+            <span class="field-hint">
+              To change this shortcut, visit
+              <button class="link-btn" id="open-shortcuts">chrome://extensions/shortcuts</button>
+              — find "Optimize Prompt" and click the pencil icon.
+            </span>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="field">
+            <label>How to use it</label>
+            <ol class="steps">
+              <li>Click into any prompt field on Claude, ChatGPT, or Gemini</li>
+              <li>Type your rough idea or question</li>
+              <li>Press <kbd>Ctrl+Shift+O</kbd> (or click the ✨ button)</li>
+              <li>Review the optimized prompt in the popup, edit if needed</li>
+              <li>Click <strong>Use This</strong> to apply it</li>
+            </ol>
+          </div>
+        </div>
+      </section>
+
+      <!-- Platforms -->
+      <section id="platforms" class="settings-section">
+        <div class="section-header">
+          <h2>Platforms</h2>
+          <p>The extension is active on these sites. Optimization style is tailored per platform.</p>
+        </div>
+        <div class="card">
+          <div class="platform-list">
+            <div class="platform-item">
+              <div class="platform-icon claude-icon">C</div>
+              <div class="platform-info">
+                <div class="platform-name">Claude</div>
+                <div class="platform-url">claude.ai</div>
+              </div>
+              <div class="platform-status active">Active</div>
+            </div>
+            <div class="platform-item">
+              <div class="platform-icon chatgpt-icon">G</div>
+              <div class="platform-info">
+                <div class="platform-name">ChatGPT</div>
+                <div class="platform-url">chatgpt.com</div>
+              </div>
+              <div class="platform-status active">Active</div>
+            </div>
+            <div class="platform-item">
+              <div class="platform-icon gemini-icon">G</div>
+              <div class="platform-info">
+                <div class="platform-name">Gemini</div>
+                <div class="platform-url">gemini.google.com</div>
+              </div>
+              <div class="platform-status active">Active</div>
+            </div>
+          </div>
+          <div class="platform-note">
+            💡 Each platform gets a tailored meta-prompt so optimizations feel native to that AI's strengths.
+          </div>
+        </div>
+      </section>
+
+      <!-- About -->
+      <section id="about" class="settings-section">
+        <div class="section-header">
+          <h2>About</h2>
+        </div>
+        <div class="card">
+          <div class="about-block">
+            <div class="about-row"><span>Extension</span><strong>Optimize Prompt</strong></div>
+            <div class="about-row"><span>Version</span><strong>1.1.0</strong></div>
+            <div class="about-row"><span>Model</span><strong>Gemini 2.5 Flash</strong></div>
+            <div class="about-row"><span>Storage</span><strong>Chrome Sync (local to your profile)</strong></div>
+          </div>
+          <div class="divider"></div>
+          <p class="about-note">Your API key is stored using Chrome's secure sync storage. It is never sent anywhere except directly to Google's Gemini API when you trigger an optimization.</p>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Save Bar -->
+    <div class="save-bar" id="save-bar">
+      <span class="save-status" id="save-status"></span>
+      <div class="save-actions">
+        <button class="btn btn-secondary" id="reset-btn">Reset to defaults</button>
+        <button class="btn btn-primary" id="save-btn">Save settings</button>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="settings.js"></script>
+</body>
+</html>
