@@ -4,8 +4,6 @@
 
 Have you ever written a prompt that felt vague, incomplete, or rambling? Instead of spending minutes tweaking it manually, **Optimize Prompt** acts as your personal prompt engineer right inside your favorite AI chat interfaces. With a single click or keyboard shortcut, it rewrites your prompt for maximum clarity, structure, and effectiveness before you hit send.
 
-![Optimize Prompt Banner](https://via.placeholder.com/800x400.png?text=Optimize+Prompt+Chrome+Extension) *(Feel free to add a screenshot here!)*
-
 ## 🌟 Features
 
 - **Seamless Integration**: Works natively inside the input textareas of **Claude**, **ChatGPT**, and **Google Gemini**.
