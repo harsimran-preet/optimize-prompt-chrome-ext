@@ -6,11 +6,11 @@ Have you ever written a prompt that felt vague, incomplete, or rambling? Instead
 
 ## 🌟 Features
 
-- **Seamless Integration**: Works on **ANY website**, natively integrating into text areas where you type your prompts.
+- **Seamless Integration**: Works on **ANY website**, natively integrating into text areas where you type your prompts. Now with robust support for iframes and cross-domain inputs.
 - **One-Click Optimization**: A subtle floating ✨ button sits in your text box on Claude, ChatGPT, and Gemini (or everywhere, if enabled in settings). Click it, and watch your prompt transform.
 - **Message Formalization**: Need to send a professional email or message? Use the new Formalize feature to instantly rewrite your text to be clear, polite, and professional.
-- **Lightning Fast**: Powered by Google's latest **Gemini 2.5 Flash** model, the optimization happens almost instantly.
-- **Universal Keyboard Shortcuts**: Use it anywhere! Press `Ctrl+Shift+O` (`Cmd+Shift+O` on Mac) to optimize a prompt, or `Ctrl+Shift+F` (`Cmd+Shift+F` on Mac) to formalize a message.
+- **Lightning Fast**: Powered by Google's latest **Gemini 2.5 Flash** model, the optimization happens almost instantly and guarantees full output generation.
+- **Universal Keyboard Shortcuts**: Use it anywhere! Press `Ctrl+Shift+O` (`Cmd+Shift+O` on Mac) to optimize a prompt, or `Ctrl+Shift+F` (`Cmd+Shift+F` on Mac) to formalize a message. Even works reliably across multiple windows and tabs.
 - **Interactive Review**: Review, edit, or apply the optimized text in a beautiful, unobtrusive modal before it replaces your original text.
 - **Platform Controls**: Easily toggle which websites the extension is active on via the settings page.
 - **Privacy-First**: Your Gemini API key is stored securely in your browser's local storage and is never sent anywhere else.

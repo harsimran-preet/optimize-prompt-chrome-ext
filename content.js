@@ -1,9 +1,36 @@
 // content.js - Injected into Claude, ChatGPT, Gemini pages
 
 (function () {
+  if (window.__opExtensionLoaded) return;
+  window.__opExtensionLoaded = true;
+
   let floatingBtn = null;
   let activeTextarea = null;
   let isModalOpen = false;
+
+  let settingsCache = {
+    floatingBtn: true,
+    platAny: false,
+    platClaude: true,
+    platChatgpt: true,
+    platGemini: true,
+    outputMode: "popup",
+    geminiApiKey: ""
+  };
+
+  // Pre-load settings
+  chrome.storage.sync.get(settingsCache).then(settings => {
+    settingsCache = settings;
+  });
+
+  // Keep settings updated
+  chrome.storage.onChanged.addListener((changes, area) => {
+    if (area === "sync") {
+      for (let key in changes) {
+        settingsCache[key] = changes[key].newValue;
+      }
+    }
+  });
 
   // ─── Platform Detection ───────────────────────────────────────────────────
 
@@ -39,7 +66,7 @@
         'textarea',
       ]
     };
-    return selectors[platform] || ['div[contenteditable="true"]', 'textarea', 'input[type="text"]'];
+    return selectors[platform] || ['div[contenteditable="true"]', 'textarea', 'input[type="text"]', 'input[type="search"]'];
   }
 
   // ─── Get Text from Active Element ────────────────────────────────────────
@@ -135,33 +162,25 @@
       const el = e.target;
       const isInputEl = selectors.some(sel => el.matches?.(sel)) || 
                         el.tagName === "TEXTAREA" || 
-                        (el.tagName === "INPUT" && el.type === "text") ||
+                        (el.tagName === "INPUT" && /^(text|search|url|email)$/i.test(el.type)) ||
                         el.isContentEditable;
                         
       if (isInputEl) {
         activeTextarea = el;
         
-        chrome.storage.sync.get({
-          floatingBtn: true,
-          platAny: false,
-          platClaude: true,
-          platChatgpt: true,
-          platGemini: true
-        }).then((settings) => {
-          const platform = detectPlatform();
-          let isEnabled = false;
-          if (platform === "claude.ai") isEnabled = settings.platClaude;
-          else if (platform === "chatgpt.com") isEnabled = settings.platChatgpt;
-          else if (platform === "gemini.google.com") isEnabled = settings.platGemini;
-          else isEnabled = settings.platAny;
+        const platform = detectPlatform();
+        let isEnabled = false;
+        if (platform === "claude.ai") isEnabled = settingsCache.platClaude;
+        else if (platform === "chatgpt.com") isEnabled = settingsCache.platChatgpt;
+        else if (platform === "gemini.google.com") isEnabled = settingsCache.platGemini;
+        else isEnabled = settingsCache.platAny;
 
-          if (!isEnabled) return;
-          
-          if (settings.floatingBtn !== false) {
-            createFloatingButton();
-            positionFloatingButton(el);
-          }
-        });
+        if (!isEnabled) return;
+        
+        if (settingsCache.floatingBtn !== false) {
+          createFloatingButton();
+          positionFloatingButton(el);
+        }
       }
     });
 
@@ -192,31 +211,48 @@
     return triggerAction('formalize');
   }
 
+  function getActuallyActiveElement() {
+    let active = document.activeElement;
+    while (active && active.shadowRoot && active.shadowRoot.activeElement) {
+      active = active.shadowRoot.activeElement;
+    }
+    if (active && (active.tagName === "TEXTAREA" || (active.tagName === "INPUT" && /^(text|search|url|email)$/i.test(active.type)) || active.isContentEditable)) {
+      return active;
+    }
+    return null;
+  }
+
   async function triggerAction(actionType = 'optimize') {
     if (isModalOpen) return;
 
     const platform = detectPlatform();
-    const settings = await chrome.storage.sync.get({
-      geminiApiKey: "",
-      outputMode: "popup",
-      platAny: false,
-      platClaude: true,
-      platChatgpt: true,
-      platGemini: true
-    });
-
     let isEnabled = false;
-    if (platform === "claude.ai") isEnabled = settings.platClaude;
-    else if (platform === "chatgpt.com") isEnabled = settings.platChatgpt;
-    else if (platform === "gemini.google.com") isEnabled = settings.platGemini;
-    else isEnabled = settings.platAny;
+    if (platform === "claude.ai") isEnabled = settingsCache.platClaude;
+    else if (platform === "chatgpt.com") isEnabled = settingsCache.platChatgpt;
+    else if (platform === "gemini.google.com") isEnabled = settingsCache.platGemini;
+    else isEnabled = settingsCache.platAny;
 
     if (!isEnabled) return; // Do nothing if disabled on this platform
 
-    // Find active input
-    let el = findActiveInput();
-    if (!el && activeTextarea) {
+    // Find active input: 1) currently focused, 2) recently focused, 3) fallback by selector
+    let el = getActuallyActiveElement();
+    if (!el && activeTextarea && document.body.contains(activeTextarea)) {
       el = activeTextarea;
+    }
+    
+    // If the active element is an iframe, assume the iframe's content script will handle the shortcut.
+    if (document.activeElement && document.activeElement.tagName === "IFRAME") {
+      return;
+    }
+
+    // If we're in an iframe and no active element was found in this iframe, don't fallback to selectors
+    // because another frame might have the real active element. Let the other frame handle it.
+    if (!el && window.self !== window.top) {
+      return;
+    }
+
+    if (!el) {
+      el = findFallbackInput();
     }
 
     if (!el) {
@@ -230,12 +266,18 @@
       return;
     }
 
-    if (!settings.geminiApiKey) {
+    // Await just to be safe if the user triggers the action before the async cache loads
+    if (!settingsCache.geminiApiKey) {
+      const dbSettings = await chrome.storage.sync.get({ geminiApiKey: "" });
+      settingsCache.geminiApiKey = dbSettings.geminiApiKey;
+    }
+
+    if (!settingsCache.geminiApiKey) {
       showModal({ error: "No API key found. Click the ✨ extension icon in your toolbar to add your Gemini API key." });
       return;
     }
 
-    const mode = settings.outputMode;
+    const mode = settingsCache.outputMode;
 
     if (mode === "replace") {
       // Direct replace — call API and swap immediately, show error modal only on failure
@@ -246,16 +288,7 @@
     }
   }
 
-  function findActiveInput() {
-    let active = document.activeElement;
-    while (active && active.shadowRoot && active.shadowRoot.activeElement) {
-      active = active.shadowRoot.activeElement;
-    }
-
-    if (active && (active.tagName === "TEXTAREA" || (active.tagName === "INPUT" && active.type === "text") || active.isContentEditable)) {
-      return active;
-    }
-
+  function findFallbackInput() {
     const selectors = getInputSelectors();
     for (const sel of selectors) {
       const el = document.querySelector(sel);
@@ -345,53 +378,50 @@
 
     // If loading, fire the API call
     if (loading) {
-      const { geminiApiKey } = {};
-      chrome.storage.sync.get("geminiApiKey").then(({ geminiApiKey }) => {
-        chrome.runtime.sendMessage(
-          { action: "callGeminiAPI", payload: { apiKey: geminiApiKey, prompt: original, platform, actionType } },
-          (response) => {
-            const currentModal = document.getElementById("op-modal");
-            if (!currentModal) return; // Modal was closed
+      chrome.runtime.sendMessage(
+        { action: "callGeminiAPI", payload: { apiKey: settingsCache.geminiApiKey, prompt: original, platform, actionType } },
+        (response) => {
+          const currentModal = document.getElementById("op-modal");
+          if (!currentModal) return; // Modal was closed
 
-            const loadingEl = currentModal.querySelector(".op-loading");
-            const textareaEl = currentModal.querySelector(".op-optimized-textarea");
-            const useBtn = currentModal.querySelector(".op-use-btn");
-            const errorBox = currentModal.querySelector(".op-error-box");
+          const loadingEl = currentModal.querySelector(".op-loading");
+          const textareaEl = currentModal.querySelector(".op-optimized-textarea");
+          const useBtn = currentModal.querySelector(".op-use-btn");
+          const errorBox = currentModal.querySelector(".op-error-box");
 
-            if (response?.success) {
-              if (directReplace) {
-                // Skip popup — apply immediately and close
-                if (element && response.data) {
-                  setTextToElement(element, response.data.trim());
-                }
-                closeModal();
-                return;
+          if (response?.success) {
+            if (directReplace) {
+              // Skip popup — apply immediately and close
+              if (element && response.data) {
+                setTextToElement(element, response.data.trim());
               }
-
-              loadingEl.style.display = "none";
-              textareaEl.style.display = "block";
-              textareaEl.value = response.data;
-              useBtn.removeAttribute("disabled");
-
-              useBtn.addEventListener("click", () => {
-                const finalText = textareaEl.value.trim();
-                if (element && finalText) {
-                  setTextToElement(element, finalText);
-                }
-                closeModal();
-              });
-
-              // Enter key to confirm
-              textareaEl.focus();
-            } else {
-              loadingEl.style.display = "none";
-              textareaEl.style.display = "none";
-              errorBox.style.display = "flex";
-              errorBox.innerHTML = `<span class="op-error-icon">⚠️</span><p>${escapeHtml(response?.error || "Unknown error occurred.")}</p>`;
+              closeModal();
+              return;
             }
+
+            loadingEl.style.display = "none";
+            textareaEl.style.display = "block";
+            textareaEl.value = response.data;
+            useBtn.removeAttribute("disabled");
+
+            useBtn.addEventListener("click", () => {
+              const finalText = textareaEl.value.trim();
+              if (element && finalText) {
+                setTextToElement(element, finalText);
+              }
+              closeModal();
+            });
+
+            // Enter key to confirm
+            textareaEl.focus();
+          } else {
+            loadingEl.style.display = "none";
+            textareaEl.style.display = "none";
+            errorBox.style.display = "flex";
+            errorBox.innerHTML = `<span class="op-error-icon">⚠️</span><p>${escapeHtml(response?.error || "Unknown error occurred.")}</p>`;
           }
-        );
-      });
+        }
+      );
     }
   }
 
@@ -434,4 +464,31 @@
   // ─── Init ─────────────────────────────────────────────────────────────────
 
   setupFocusTracking();
+
+  // Check if an input is already focused on load
+  setTimeout(() => {
+    const el = getActuallyActiveElement();
+    if (el) {
+      const selectors = getInputSelectors();
+      const isInputEl = selectors.some(sel => el.matches?.(sel)) || 
+                        el.tagName === "TEXTAREA" || 
+                        (el.tagName === "INPUT" && /^(text|search|url|email)$/i.test(el.type)) ||
+                        el.isContentEditable;
+      if (isInputEl) {
+        activeTextarea = el;
+        
+        const platform = detectPlatform();
+        let isEnabled = false;
+        if (platform === "claude.ai") isEnabled = settingsCache.platClaude;
+        else if (platform === "chatgpt.com") isEnabled = settingsCache.platChatgpt;
+        else if (platform === "gemini.google.com") isEnabled = settingsCache.platGemini;
+        else isEnabled = settingsCache.platAny;
+
+        if (isEnabled && settingsCache.floatingBtn !== false) {
+          createFloatingButton();
+          positionFloatingButton(el);
+        }
+      }
+    }
+  }, 500);
 })();

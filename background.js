@@ -6,17 +6,49 @@ chrome.action.onClicked.addListener(() => {
 });
 
 
+chrome.runtime.onInstalled.addListener(async () => {
+  // Inject content script into all existing matching tabs
+  try {
+    const tabs = await chrome.tabs.query({ url: ["http://*/*", "https://*/*"] });
+    for (const tab of tabs) {
+      // Avoid injecting into restricted pages
+      if (tab.url.startsWith("chrome://") || tab.url.startsWith("https://chrome.google.com/webstore")) {
+        continue;
+      }
+      try {
+        await chrome.scripting.executeScript({
+          target: { tabId: tab.id, allFrames: true },
+          files: ["content.js"]
+        });
+        await chrome.scripting.insertCSS({
+          target: { tabId: tab.id, allFrames: true },
+          files: ["modal.css"]
+        });
+      } catch (err) {
+        // Ignore errors for tabs that cannot be scripted
+      }
+    }
+  } catch (e) {
+    console.error("Install script injection error:", e);
+  }
+});
+
 chrome.commands.onCommand.addListener(async (command) => {
-  if (command === "optimize-prompt") {
-    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    if (tab) {
-      chrome.tabs.sendMessage(tab.id, { action: "triggerOptimize" });
+  try {
+    let tabs = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
+    if (tabs.length === 0) {
+      tabs = await chrome.tabs.query({ active: true, currentWindow: true });
     }
-  } else if (command === "formalize-message") {
-    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    if (tab) {
-      chrome.tabs.sendMessage(tab.id, { action: "triggerFormalize" });
+    if (tabs.length > 0) {
+      const tab = tabs[0];
+      if (command === "optimize-prompt") {
+        await chrome.tabs.sendMessage(tab.id, { action: "triggerOptimize" }).catch(() => {});
+      } else if (command === "formalize-message") {
+        await chrome.tabs.sendMessage(tab.id, { action: "triggerFormalize" }).catch(() => {});
+      }
     }
+  } catch (error) {
+    console.error("Command error:", error);
   }
 });
 
