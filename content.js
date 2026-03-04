@@ -69,6 +69,69 @@
     return selectors[platform] || ['div[contenteditable="true"]', 'textarea', 'input[type="text"]', 'input[type="search"]'];
   }
 
+  // ─── Selection Helpers ───────────────────────────────────────────────────
+
+  function getSelectedText(el) {
+    if (!el) return null;
+
+    if (el.tagName === "TEXTAREA" || el.tagName === "INPUT") {
+      const start = el.selectionStart;
+      const end = el.selectionEnd;
+      if (typeof start === "number" && typeof end === "number" && start !== end) {
+        return { text: el.value.substring(start, end), start, end };
+      }
+      return null;
+    }
+
+    // contenteditable
+    const sel = window.getSelection();
+    if (!sel || sel.isCollapsed || sel.rangeCount === 0) return null;
+    const range = sel.getRangeAt(0);
+    // Ensure the selection is within this element
+    if (!el.contains(range.startContainer) || !el.contains(range.endContainer)) return null;
+    const text = sel.toString();
+    if (!text.trim()) return null;
+    return { text, range: range.cloneRange() };
+  }
+
+  function replaceSelectedText(el, newText, selectionInfo) {
+    if (!el) return;
+
+    if (el.tagName === "TEXTAREA" || el.tagName === "INPUT") {
+      const { start, end } = selectionInfo;
+      const before = el.value.substring(0, start);
+      const after = el.value.substring(end);
+      const fullText = before + newText + after;
+
+      const nativeSetter = Object.getOwnPropertyDescriptor(
+        window.HTMLTextAreaElement.prototype, "value"
+      )?.set || Object.getOwnPropertyDescriptor(
+        window.HTMLInputElement.prototype, "value"
+      )?.set;
+      if (nativeSetter) {
+        nativeSetter.call(el, fullText);
+      } else {
+        el.value = fullText;
+      }
+      el.dispatchEvent(new Event("input", { bubbles: true }));
+      el.dispatchEvent(new Event("change", { bubbles: true }));
+    } else {
+      // contenteditable
+      el.focus();
+      const sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(selectionInfo.range);
+      document.execCommand("insertText", false, newText);
+
+      // Fallback
+      if (!el.textContent.includes(newText)) {
+        selectionInfo.range.deleteContents();
+        selectionInfo.range.insertNode(document.createTextNode(newText));
+        el.dispatchEvent(new InputEvent("input", { bubbles: true, inputType: "insertText", data: newText }));
+      }
+    }
+  }
+
   // ─── Get Text from Active Element ────────────────────────────────────────
 
   function getTextFromElement(el) {
@@ -260,10 +323,20 @@
       return;
     }
 
-    const originalText = getTextFromElement(el);
+    // Check for selected text first
+    const selectionInfo = getSelectedText(el);
+    let originalText = selectionInfo ? selectionInfo.text : getTextFromElement(el);
+
     if (!originalText) {
       showModal({ error: "Your text is empty. Type something first." });
       return;
+    }
+
+    // Detect {command} pattern — treat content inside braces as a generation instruction
+    const braceMatch = originalText.trim().match(/^\{(.+)\}$/s);
+    if (braceMatch) {
+      originalText = braceMatch[1].trim();
+      actionType = "generate";
     }
 
     // Await just to be safe if the user triggers the action before the async cache loads
@@ -280,11 +353,9 @@
     const mode = settingsCache.outputMode;
 
     if (mode === "replace") {
-      // Direct replace — call API and swap immediately, show error modal only on failure
-      showModal({ loading: true, original: originalText, element: el, platform, directReplace: true, actionType });
+      showModal({ loading: true, original: originalText, element: el, platform, directReplace: true, actionType, selectionInfo });
     } else {
-      // Show loading modal with review popup
-      showModal({ loading: true, original: originalText, element: el, platform, actionType });
+      showModal({ loading: true, original: originalText, element: el, platform, actionType, selectionInfo });
     }
   }
 
@@ -299,7 +370,7 @@
 
   // ─── Modal ────────────────────────────────────────────────────────────────
 
-  function showModal({ loading = false, original = "", error = null, element = null, platform = "", directReplace = false, actionType = "optimize" }) {
+  function showModal({ loading = false, original = "", error = null, element = null, platform = "", directReplace = false, actionType = "optimize", selectionInfo = null }) {
     isModalOpen = true;
     hideFloatingButton();
     removeModal();
@@ -313,11 +384,12 @@
     modal.setAttribute("aria-modal", "true");
     
     const isFormalize = actionType === "formalize";
-    const titleText = isFormalize ? "✨ Formalize Message" : "✨ Optimize Prompt";
-    const originalLabel = isFormalize ? "Original Message" : "Original Prompt";
-    const newLabel = isFormalize ? "Formalized Message" : "Optimized Prompt";
-    const loadingText = isFormalize ? "Formalizing with Gemini 2.5 Flash…" : "Optimizing with Gemini 2.5 Flash…";
-    const placeholderText = isFormalize ? "Formalized message will appear here…" : "Optimized prompt will appear here…";
+    const isGenerate = actionType === "generate";
+    const titleText = isGenerate ? "✨ Generate Text" : isFormalize ? "✨ Formalize Message" : "✨ Optimize Prompt";
+    const originalLabel = isGenerate ? "Instruction" : isFormalize ? "Original Message" : "Original Prompt";
+    const newLabel = isGenerate ? "Generated Text" : isFormalize ? "Formalized Message" : "Optimized Prompt";
+    const loadingText = isGenerate ? "Generating with Gemini 2.5 Flash…" : isFormalize ? "Formalizing with Gemini 2.5 Flash…" : "Optimizing with Gemini 2.5 Flash…";
+    const placeholderText = isGenerate ? "Generated text will appear here…" : isFormalize ? "Formalized message will appear here…" : "Optimized prompt will appear here…";
 
     modal.setAttribute("aria-label", titleText);
 
@@ -393,7 +465,11 @@
             if (directReplace) {
               // Skip popup — apply immediately and close
               if (element && response.data) {
-                setTextToElement(element, response.data.trim());
+                if (selectionInfo) {
+                  replaceSelectedText(element, response.data.trim(), selectionInfo);
+                } else {
+                  setTextToElement(element, response.data.trim());
+                }
               }
               closeModal();
               return;
@@ -407,7 +483,11 @@
             useBtn.addEventListener("click", () => {
               const finalText = textareaEl.value.trim();
               if (element && finalText) {
-                setTextToElement(element, finalText);
+                if (selectionInfo) {
+                  replaceSelectedText(element, finalText, selectionInfo);
+                } else {
+                  setTextToElement(element, finalText);
+                }
               }
               closeModal();
             });

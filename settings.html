@@ -15,11 +15,12 @@
         <span class="logo-icon">✨</span>
         <div>
           <div class="logo-name">Optimize Prompt</div>
-          <div class="logo-version">v1.1.0</div>
+          <div class="logo-version">v1.5.0</div>
         </div>
       </div>
       <ul class="nav-links">
-        <li><a href="#api" class="nav-link active" data-section="api">🔑 API Key</a></li>
+        <li><a href="#howto" class="nav-link active" data-section="howto">📖 How to Use</a></li>
+        <li><a href="#api" class="nav-link" data-section="api">🔑 API Key</a></li>
         <li><a href="#behavior" class="nav-link" data-section="behavior">⚙️ Behavior</a></li>
         <li><a href="#shortcut" class="nav-link" data-section="shortcut">⌨️ Keyboard Shortcut</a></li>
         <li><a href="#platforms" class="nav-link" data-section="platforms">🌐 Platforms</a></li>
@@ -29,6 +30,79 @@
 
     <!-- Main Content -->
     <main class="main">
+
+      <!-- How to Use -->
+      <section id="howto" class="settings-section">
+        <div class="section-header">
+          <h2>How to Use</h2>
+          <p>Three powerful actions, one simple workflow.</p>
+        </div>
+
+        <!-- Quick Start -->
+        <div class="card" style="margin-bottom: 16px;">
+          <div class="field">
+            <label>Quick Start</label>
+            <ol class="steps">
+              <li>Click into any text field on a supported website</li>
+              <li>Type your text (or select a portion of it)</li>
+              <li>Press the shortcut for the action you want</li>
+              <li>Review the result, edit if needed, then click <strong>Use This</strong></li>
+            </ol>
+          </div>
+        </div>
+
+        <!-- Three Modes -->
+        <div class="card" style="margin-bottom: 16px;">
+          <div class="field">
+            <label>Actions</label>
+          </div>
+
+          <div class="howto-feature">
+            <div class="howto-feature-icon howto-optimize">🎯</div>
+            <div class="howto-feature-body">
+              <div class="howto-feature-title">Optimize Prompt</div>
+              <div class="howto-feature-shortcut" id="howto-optimize-keys"></div>
+              <p class="howto-feature-desc">Transforms rough ideas into well-structured AI prompts. Adds clarity, context, and formatting to get better responses from Claude, ChatGPT, Gemini, or any AI.</p>
+            </div>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="howto-feature">
+            <div class="howto-feature-icon howto-formalize">✉️</div>
+            <div class="howto-feature-body">
+              <div class="howto-feature-title">Formalize Message</div>
+              <div class="howto-feature-shortcut" id="howto-formalize-keys"></div>
+              <p class="howto-feature-desc">Rewrites casual text into professional, polished language. Perfect for emails, Slack messages, or any business communication.</p>
+            </div>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="howto-feature">
+            <div class="howto-feature-icon howto-generate">✨</div>
+            <div class="howto-feature-body">
+              <div class="howto-feature-title">Generate Text</div>
+              <div class="howto-feature-shortcut"><kbd>{</kbd> <span class="howto-feature-shortcut-hint">your instruction</span> <kbd>}</kbd></div>
+              <p class="howto-feature-desc">Wrap any instruction in curly braces and trigger either shortcut. The entire command gets replaced with generated content.</p>
+              <div class="howto-example">
+                <span class="howto-example-label">Example</span>
+                <code>{write me an email to my manager letting them know I won't be in tomorrow}</code>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Selection Tip -->
+        <div class="card">
+          <div class="howto-tip">
+            <span class="howto-tip-icon">💡</span>
+            <div>
+              <strong>Selection mode</strong> — Select a portion of text before pressing the shortcut and only the selected part will be processed. The surrounding text stays untouched.
+            </div>
+          </div>
+        </div>
+      </section>
 
       <!-- API Key -->
       <section id="api" class="settings-section">
@@ -112,10 +186,7 @@
           <div class="field">
             <label>Optimize Prompt Shortcut</label>
             <div class="shortcut-display">
-              <div class="keys" id="shortcut-keys">
-                <kbd>Ctrl</kbd><span class="key-sep">+</span><kbd>Shift</kbd><span class="key-sep">+</span><kbd>O</kbd>
-              </div>
-              <span class="shortcut-mac">Mac: <kbd>⌘</kbd><span class="key-sep">+</span><kbd>Shift</kbd><span class="key-sep">+</span><kbd>O</kbd></span>
+              <div class="keys" id="shortcut-keys"></div>
             </div>
           </div>
 
@@ -124,10 +195,7 @@
           <div class="field">
             <label>Formalize Message Shortcut</label>
             <div class="shortcut-display">
-              <div class="keys" id="formalize-shortcut-keys">
-                <kbd>Ctrl</kbd><span class="key-sep">+</span><kbd>Shift</kbd><span class="key-sep">+</span><kbd>F</kbd>
-              </div>
-              <span class="shortcut-mac">Mac: <kbd>⌘</kbd><span class="key-sep">+</span><kbd>Shift</kbd><span class="key-sep">+</span><kbd>F</kbd></span>
+              <div class="keys" id="formalize-shortcut-keys"></div>
             </div>
             <span class="field-hint">
               To change these shortcuts, visit
@@ -136,18 +204,6 @@
             </span>
           </div>
 
-          <div class="divider"></div>
-
-          <div class="field">
-            <label>How to use it</label>
-            <ol class="steps">
-              <li>Click into any prompt/text field on ANY website</li>
-              <li>Type your rough idea or question</li>
-              <li>Press <kbd>Ctrl+Shift+O</kbd> to optimize for AI prompts, or <kbd>Ctrl+Shift+F</kbd> to formalize a message</li>
-              <li>Review the result in the popup, edit if needed</li>
-              <li>Click <strong>Use This</strong> to apply it</li>
-            </ol>
-          </div>
         </div>
       </section>
 
@@ -226,7 +282,7 @@
         <div class="card">
           <div class="about-block">
             <div class="about-row"><span>Extension</span><strong>Optimize Prompt</strong></div>
-            <div class="about-row"><span>Version</span><strong>1.1.0</strong></div>
+            <div class="about-row"><span>Version</span><strong>1.5.0</strong></div>
             <div class="about-row"><span>Model</span><strong>Gemini 2.5 Flash</strong></div>
             <div class="about-row"><span>Storage</span><strong>Chrome Sync (local to your profile)</strong></div>
           </div>

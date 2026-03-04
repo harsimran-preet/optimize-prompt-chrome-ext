@@ -127,6 +127,70 @@ document.getElementById("api-key").addEventListener("keydown", (e) => {
   if (e.key === "Enter") saveSettings();
 });
 
+// ── Dynamic shortcut display ──────────────────────────────────────────────
+
+const KEY_LABELS = {
+  "⇧": "Shift", "⌘": "Cmd", "⌥": "Alt", "⌃": "Ctrl",
+  "MacCtrl": "Ctrl", "Command": "Cmd", "Ctrl": "Ctrl",
+  "Shift": "Shift", "Alt": "Alt",
+};
+
+function parseShortcut(shortcut) {
+  if (!shortcut) return [];
+  // Chrome on Mac returns symbol strings like "⇧⌘O"; on Windows/Linux "Ctrl+Shift+O"
+  if (shortcut.includes("+")) {
+    return shortcut.split("+");
+  }
+  // Split symbol string: each known symbol is a key, remaining chars are individual keys
+  const keys = [];
+  let rest = shortcut;
+  for (const sym of Object.keys(KEY_LABELS)) {
+    if (rest.includes(sym)) {
+      keys.push(sym);
+      rest = rest.replace(sym, "");
+    }
+  }
+  // Remaining characters are the final key(s)
+  for (const ch of rest) {
+    if (ch.trim()) keys.push(ch.toUpperCase());
+  }
+  return keys;
+}
+
+function shortcutToKbds(shortcut) {
+  const keys = parseShortcut(shortcut);
+  if (!keys.length) return '<span class="shortcut-not-set">Not set</span>';
+  return keys
+    .map(k => `<kbd>${KEY_LABELS[k] || k}</kbd>`)
+    .join('<span class="key-sep">+</span>');
+}
+
+function shortcutToText(shortcut) {
+  const keys = parseShortcut(shortcut);
+  if (!keys.length) return "Not set";
+  return keys.map(k => KEY_LABELS[k] || k).join("+");
+}
+
+async function loadShortcuts() {
+  const commands = await chrome.commands.getAll();
+  const map = {};
+  for (const cmd of commands) {
+    map[cmd.name] = cmd.shortcut || "";
+  }
+
+  const optimizeShortcut = map["optimize-prompt"] || "";
+  const formalizeShortcut = map["formalize-message"] || "";
+
+  // Shortcut section
+  document.getElementById("shortcut-keys").innerHTML = shortcutToKbds(optimizeShortcut);
+  document.getElementById("formalize-shortcut-keys").innerHTML = shortcutToKbds(formalizeShortcut);
+
+  // How to Use section
+  document.getElementById("howto-optimize-keys").innerHTML = shortcutToKbds(optimizeShortcut);
+  document.getElementById("howto-formalize-keys").innerHTML = shortcutToKbds(formalizeShortcut);
+}
+
 // ── Init ───────────────────────────────────────────────────────────────────
 
 loadSettings();
+loadShortcuts();

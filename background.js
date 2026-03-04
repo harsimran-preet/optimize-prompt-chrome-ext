@@ -65,7 +65,20 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 async function handleGeminiCall({ apiKey, prompt, platform, actionType = "optimize" }) {
   let metaPrompt = "";
 
-  if (actionType === "formalize") {
+  if (actionType === "generate") {
+    metaPrompt = `You are an expert writer and assistant. The user has given you an instruction inside curly braces. Your job is to generate the requested content directly.
+
+Rules:
+- Follow the user's instruction precisely
+- Return ONLY the generated content, nothing else
+- No explanations, no preamble, no "Here is your text:" — just the content itself
+- Match the appropriate tone and format for the request (email, message, paragraph, etc.)
+
+User's instruction:
+"""
+${prompt}
+"""`;
+  } else if (actionType === "formalize") {
     metaPrompt = `You are an expert copywriter. Your job is to take the user's rough message and rewrite it to be formal, professional, clear, and polite.
 
 Apply these improvements:
@@ -135,7 +148,8 @@ ${prompt}
         contents: [{ parts: [{ text: metaPrompt }] }],
         generationConfig: {
           temperature: 0.7,
-          maxOutputTokens: 8000
+          maxOutputTokens: 8000,
+          thinkingConfig: { thinkingBudget: 0 }
         }
       })
     }
